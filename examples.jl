@@ -193,3 +193,61 @@ vec_of_ntuples[1]
 using Plots
 y = [1,2,1,4]
 plot(y)
+
+
+# Реализовать анимацию кардиографа
+module CardiographAnimation
+
+using Plots
+
+mutable struct Cardiograph
+    ecg::Vector{Float64}
+    ecg_cursor::Int
+    frame::Vector{Float64}
+    frame_cursor::Int
+    function Cardiograph(ecg::Vector{Float64}, len = length(ecg))
+        frame = fill(NaN, len)
+        new(ecg, 1, frame, 1)
+    end
+end
+
+function step_fast!(state::Cardiograph, speed = 10)
+    for _ in 1:speed
+        step!(state)
+    end
+end
+
+function step!(state::Cardiograph)
+
+    # заполняем кадр frame так, чтобы ЭКГ на экране
+    # перетиралось справа-налево новыми данными из ecg
+    # например, для растущего массива 1,2,3...
+    # в какой-то момент будет показано: 8, 9, 10, 4, 5, 6, 7
+    # а на следующем кадре: 8, 9, 10, 11, 5, 6, 7
+
+    # заглушка для примера
+    state.frame .= rand(-500.:500, length(state.frame))
+
+
+    return nothing
+end
+
+function (@main)(ARGS)
+
+    ecg = rand(-500.:500, 10000) # read a data chunk
+    car = Cardiograph(ecg, 700)
+
+    anim = @animate for time = 1:100
+        step_fast!(car)
+        x = car.frame
+        plot(x, ylim = (-500, 500))
+    end
+
+    gif(anim, "cardiograph.gif", fps = 10)
+end
+
+end # module
+
+import .CardiographAnimation as CA
+
+CA.main("")
